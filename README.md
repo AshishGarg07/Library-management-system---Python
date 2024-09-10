@@ -60,7 +60,6 @@ This Python project is a simple Library Management System that uses MySQL as the
 
 - *Project Version*: 1.0 BETA
 - *Developed By*: Ashish Garg
-- *Team Members*: Dhruv Gupta, Apurva Bansal, Ritesh Kumar Sinha
 - *Contact*: [connect.ashsihgarg22822@gmail.com](mailto:connect.ashishgarg22822@gmail.com)
 - *Institution*: SRM University Delhi-NCR, 3rd SEM, B.Tech (CSE)
 
