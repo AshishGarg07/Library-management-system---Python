@@ -1,37 +1,14 @@
-#Modules:-
 import os
 import sys
+import tkinter as tk
+from tkinter import messagebox, simpledialog
+import mysql.connector as sql
 
-#MYSQL Connection:-
-try:
-    import mysql.connector as sql
-except:
-    print("Errors:\n1) MySql is not Installed on System\n2) pip is not Installed\n3) MySQL is not connected with Python\n")
-    print("Please Refer to the Documentation for Fix this")
-
-#Database Creation/Connection:-
-pass_wd=str(input("Enter MySQL Password: "))
-try:
-    db=sql.connect(host="localhost",user="root",passwd=pass_wd)
-    cursor=db.cursor()
-    if db.is_connected():
-        try:
-            cursor.execute("USE pyplm")
-            db.commit()
-            print("Database connected")
-        except:
-            cursor.execute("create database pyplm")
-            cursor.execute("USE pyplm")
-            
-            print("New Database Created")
-            db.commit()
-            print("Database connected")        
-except:
-    print("Password is Wrong, Try Again")
-    pass_wd2=str(input("Re-Enter MySQL Password: "))
+# MYSQL Connection
+def connect_db(password):
     try:
-        db=sql.connect(host="localhost",user="root",passwd=pass_wd2)
-        cursor=db.cursor()
+        db = sql.connect(host="localhost", user="root", passwd=password)
+        cursor = db.cursor()
         if db.is_connected():
             try:
                 cursor.execute("USE pyplm")
@@ -40,275 +17,147 @@ except:
             except:
                 cursor.execute("create database pyplm")
                 cursor.execute("USE pyplm")
-                
                 print("New Database Created")
                 db.commit()
                 print("Database connected")
+            return db, cursor
     except:
-        print("Password is Wrong, Try Again [Last Chance]")
-        pass_wd3=str(input("Re-Enter MySQL Password: "))
-        try:
-            db=sql.connect(host="localhost",user="root",passwd=pass_wd3)
-            cursor=db.cursor()
-            if db.is_connected():
-                try:
-                    cursor.execute("USE pyplm")
-                    db.commit()
-                    print("Database connected")
-                except:
-                    cursor.execute("create database pyplm")
-                    cursor.execute("USE pyplm")
-                    
-                    print("New Database Created")
-                    db.commit()
-                    print("Database connected")
-        except:
-            print(" ")
-            print("We are Unable to authorize You")
-            print(" ")
-            print("Press '1' to fix Errors")
-            fix_db=int(input("Enter: "))
-            print("")
-            if fix_db==1:
-                x=input("Enter Name of host (Default: localhost): ")
-                y=input("Enter Name of user (Default: root): ")
-                z=input("Enter Password: ")
-                try:
-                    db=sql.connect(host=x,user=y,passwd=z)
-                    cursor=db.cursor()
-                    if db.is_connected():
-                        try:
-                            cursor.execute("USE pyplm")
-                            db.commit()
-                            print("Database connected")
-                        except:
-                            cursor.execute("create database pyplm")
-                            cursor.execute("USE pyplm")
-                            
-                            print("New Database Created")
-                            db.commit()
-                            print("Database connected")
-                except:
-                    print("\n")
-                    print("Unable to authorize")
-                    print("Please Refer to the Documentation for Fix this")
-                    print("Errors May Occurs:\n1) MySql is not Installed on System\n2) pip is not Installed\n3) MySQL is not connected with Python\n")
-            else:
-                print("Thank You for Use Our Service\nPlease give us your feedback to improve our service")
-                exit
+        messagebox.showerror("Connection Error", "Could not connect to the database. Check the password or MySQL installation.")
+        return None, None
 
-#Password Manager:-
+# Initialize the main window
+root = tk.Tk()
+root.title("Library Management System")
+root.geometry("800x600")
+
+# Set a background color
+root.configure(bg="#f0e68c")  # Light Khaki background
+
 Admin_Passwd = "admin"
 
-#First Time Run Setup:-
-def Create_Table():
-    try:
-        Table="CREATE TABLE DATA (Student_ID INT(3), Book_ID INT(5))"
-        cursor.execute(Table)
-        db.commit()
-    except:
-        print("TABLE ALREADY EXIST")
-        os.system('cls' if os.name == 'nt' else "printf '\033c'")
-
-#Credit:-
-def credit():
-    os.system('cls' if os.name == 'nt' else "printf '\033c'")
-    print("Credit:- Ashish Garg")
-    print("Python Librery Project")
-    print("Version: 1.0 BETA")
-    print("An Opne Source Project - Build for College Project 3rd SEM (SRM University Delhi-NCR)")
-    print("Contact US via E-Mail: ashishgarg22822@gmail.com\n")
-    if (continue_Query()==1):
-        start_menu()
-
-#Menu:-
+# Main Menu
 def start_menu():
-    os.system('cls' if os.name == 'nt' else "printf '\033c'")
-    print("WELCOME\n")
-    print("1) Admin Login\n2) Student Login\nPress '-1' for Exit\n")
-    temp = int(input("Choose: "))
-    if temp==1:
-        pass_admin = str(input("Enter Admin Password: "))
-        if (pass_admin==Admin_Passwd):
-            Admin_Panel()
-        else:
-            print("Wrong Password!")
-    elif temp==2:
-        Student_Panel()
-    elif temp==0:
-        credit()
-    elif temp==-1:
-        exit_prog()
+    clear_frame()
+    label = tk.Label(root, text="WELCOME\n", font=("Arial", 24), bg="#f0e68c", fg="#000000")
+    label.place(relx=0.5, rely=0.2, anchor="center")
+
+    admin_btn = tk.Button(root, text="Admin Login", command=admin_login, width=15, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    admin_btn.place(relx=0.5, rely=0.4, anchor="center")
+
+    student_btn = tk.Button(root, text="Student Login", command=student_panel, width=15, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    student_btn.place(relx=0.5, rely=0.5, anchor="center")
+
+    exit_btn = tk.Button(root, text="Exit", command=exit_prog, width=15, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    exit_btn.place(relx=0.5, rely=0.6, anchor="center")
+
+# Clear the current frame
+def clear_frame():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+# Admin Login
+def admin_login():
+    password = simpledialog.askstring("Admin Login", "Enter Admin Password:", show='*')
+    if password == Admin_Passwd:
+        admin_panel()
     else:
-        print("Wrong inpur")
+        messagebox.showerror("Error", "Wrong Password!")
         start_menu()
 
-def Admin_Panel():
-    os.system('cls' if os.name == 'nt' else "printf '\033c'")
-    print("Admin Portal\n")
-    print("1) View All Books Issued\n2) Edit Issued Books Data\n3) Delete Record\n4) Student Portal")
+# Admin Panel
+def admin_panel():
+    clear_frame()
+    label = tk.Label(root, text="Admin Portal", font=("Arial", 24), bg="#f0e68c", fg="#000000")
+    label.place(relx=0.5, rely=0.2, anchor="center")
 
-    temp = int(input("Choose: "))
-    if temp==1:
-        View_Table_Data()
-    elif temp==2:
-        Edit_Table_Data()
-    elif temp==3:
-        Delete_Row()
-    elif temp==4:
-        Student_Panel()
-    elif temp==0:
-        start_menu()
+    view_btn = tk.Button(root, text="View All Books Issued", command=view_table_data, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    view_btn.place(relx=0.5, rely=0.4, anchor="center")
+
+    edit_btn = tk.Button(root, text="Edit Issued Books Data", command=edit_table_data, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    edit_btn.place(relx=0.5, rely=0.5, anchor="center")
+
+    delete_btn = tk.Button(root, text="Delete Record", command=delete_row, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    delete_btn.place(relx=0.5, rely=0.6, anchor="center")
+
+    back_btn = tk.Button(root, text="Back", command=start_menu, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    back_btn.place(relx=0.5, rely=0.7, anchor="center")
+
+# Student Panel
+def student_panel():
+    clear_frame()
+    label = tk.Label(root, text="Student Portal", font=("Arial", 24), bg="#f0e68c", fg="#000000")
+    label.place(relx=0.5, rely=0.2, anchor="center")
+
+    issue_btn = tk.Button(root, text="Issue a New Book", command=issue_book, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    issue_btn.place(relx=0.5, rely=0.4, anchor="center")
+
+    return_btn = tk.Button(root, text="Return a Book", command=return_book, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    return_btn.place(relx=0.5, rely=0.5, anchor="center")
+
+    view_btn = tk.Button(root, text="View all Issued Books", command=view_student_issue_book, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    view_btn.place(relx=0.5, rely=0.6, anchor="center")
+
+    back_btn = tk.Button(root, text="Back", command=start_menu, width=20, height=2, bg="#8b4513", fg="#ffffff", font=("Arial", 12))
+    back_btn.place(relx=0.5, rely=0.7, anchor="center")
+
+# Commands (Admin/Student Panel)
+def view_table_data():
+    query = "SELECT * FROM DATA"
+    cursor.execute(query)
+    results = cursor.fetchall()
+    messagebox.showinfo("Issued Books", "\n".join([f"Student ID: {i[0]}, Book ID: {i[1]}" for i in results]))
+
+def edit_table_data():
+    student_id = simpledialog.askinteger("Edit Book", "Enter Student ID:")
+    new_book_id = simpledialog.askinteger("Edit Book", "Enter New Book ID:")
+    query = f"UPDATE DATA SET Book_ID = {new_book_id} WHERE Student_ID = {student_id}"
+    cursor.execute(query)
+    db.commit()
+    messagebox.showinfo("Success", "Record updated successfully")
+
+def delete_row():
+    student_id = simpledialog.askinteger("Delete Record", "Enter Student ID:")
+    query = f"DELETE FROM DATA WHERE Student_ID = {student_id}"
+    cursor.execute(query)
+    db.commit()
+    messagebox.showinfo("Success", "Record deleted successfully")
+
+def issue_book():
+    student_id = simpledialog.askinteger("Issue Book", "Enter Student ID:")
+    book_id = simpledialog.askinteger("Issue Book", "Enter Book UPC Code:")
+    query = f"INSERT INTO DATA (Student_ID, Book_ID) VALUES ({student_id}, {book_id})"
+    cursor.execute(query)
+    db.commit()
+    messagebox.showinfo("Success", f"Book {book_id} issued to student {student_id}")
+
+def return_book():
+    student_id = simpledialog.askinteger("Return Book", "Enter Student ID:")
+    book_id = simpledialog.askinteger("Return Book", "Enter Book ID:")
+    query = f"DELETE FROM DATA WHERE Student_ID = {student_id} AND Book_ID = {book_id}"
+    cursor.execute(query)
+    db.commit()
+    messagebox.showinfo("Success", "Book returned successfully")
+
+def view_student_issue_book():
+    student_id = simpledialog.askinteger("View Issued Books", "Enter Student ID:")
+    query = f"SELECT * FROM DATA WHERE Student_ID = {student_id}"
+    cursor.execute(query)
+    results = cursor.fetchall()
+    if results:
+        messagebox.showinfo("Issued Books", "\n".join([f"Book ID: {i[1]}" for i in results]))
     else:
-        print("Wrong Input")
-        if continue_Query()==1:
-            Admin_Panel()
-        else:
-            start_menu()
-    
-    if (continue_Query()==1):
-        Admin_Panel()
-    else:
-        exit_prog()
+        messagebox.showinfo("No Books", "No books issued to this student.")
 
-def Student_Panel():
-    os.system('cls' if os.name == 'nt' else "printf '\033c'")
-    print("WELCOME TO LIBRERY\n")
-    print("1) Issue a New Book\n2) Return a Book\n3) View all Issued Book")
-    temp = int(input("Choose: "))
-    if temp==1:
-        Issue_Book()
-    elif temp==2:
-        Return_Book()
-    elif temp==3:
-        View_Student_Issue_Book()
-    elif temp==0:
-        start_menu()
-    else:
-        Student_Panel()
-
-    if (continue_Query()==1):
-        Student_Panel()
-    else:
-        exit_prog()
-
-#Commands:-
-def continue_Query():
-    print("Press '1' To Return")
-    try:
-        cont_que = int(input("Enter: "))
-        if cont_que==1:
-            return 1
-        else:
-            return 0
-    except:
-        start_menu()
-
+# Exit Program
 def exit_prog():
     cursor.close()
     db.close()
     sys.exit()
 
-#Admin Panel Commands:-
-def View_Table_Data():
-    view = "SELECT * FROM DATA"
-    cursor.execute(view)
-    results = cursor.fetchall()
-    print("+------------+---------------+\n| Student ID |    Book ID    |\n+------------+---------------+")
-    for i in results:
-        j=str(i).split()
-        for k in j:
-            print(k,end="        | ")
-        print()
-        print("+------------+---------------+")
+# Establish DB Connection
+password = simpledialog.askstring("DB Password", "Enter MySQL Password:", show='*')
+db, cursor = connect_db(password)
 
-def Edit_Table_Data():
-    print("\n1) Edit Book ID\n2) Return Back\n")
-    temp = int(input("Choose: "))
-    if temp==1:
-        StudentID = int(input("Enter Student ID: "))
-        BookID = int(input("Enter Correct Book ID: "))
-        query = "UPDATE DATA SET Book_ID = '%d' WHERE Student_ID = '%d'" % (BookID, StudentID)
-        cursor.execute(query)
-        db.commit()
-    elif temp==2:
-        Admin_Panel()
-    else:
-        print("Wrong Input!")
-        if continue_Query()==1:
-            Admin_Panel()
-        else:
-            start_menu()
-
-def Delete_Row():
-    StudentID = int(input("Enter Student ID: "))
-    query = "DELETE FROM DATA WHERE Student_ID = '%d'" % (StudentID)
-    cursor.execute(query)
-    db.commit()
-    if continue_Query()==1:
-        Admin_Panel()
-    else:
-        start_menu
-
-#Student Panel Commands:-
-def Issue_Book():
-    try:
-        x = int(input("Enter Student ID: "))
-        y = int(input("Enter Book UPC Code: "))
-        query = "INSERT INTO DATA (Student_ID, Book_ID) VALUES ('%d','%d')" % (x,y)
-        cursor.execute(query)
-        db.commit()
-        print("Student ID: '%d'\nBook ID: '%d' \nhas been Issue Successfully\n" % (x,y))
-        if continue_Query()==1:
-            Student_Panel()
-        else:
-            Issue_Book()
-    except:
-        print("WRONG INPUT! ENTER Numbers Only\n")
-        if continue_Query == 1:
-            Issue_Book()
-        else:
-            Student_Panel()
-
-def Return_Book():
-    try:
-        x = int(input("Enter Student ID: "))
-        y = int(input("Enter Book ID which has to be Return: "))
-        query = "DELETE FROM DATA WHERE Student_ID = '%d' AND Book_ID = '%d'" % (x,y)
-        cursor.execute(query)
-        db.commit()
-        print("\n")
-        if continue_Query() == 1:
-            Student_Panel()
-        else:
-            Return_Book()
-    except:
-        print("WRONG INPUT!\n")
-        if continue_Query() == 1:
-            Student_Panel()
-        else:
-            Return_Book()
-
-def View_Student_Issue_Book():
-    try:
-        x = int(input("Enter Student ID: "))
-        query = "SELECT * FROM DATA WHERE Student_ID = '%d'" % (x)
-        cursor.execute(query)
-        results = cursor.fetchall()
-        print("+------------+---------------+\n| Student ID |    Book ID    |\n+------------+---------------+")
-        for i in results:
-            j=str(i).split()
-            for k in j:
-                print(k,end="        | ")
-            print()
-            print("+------------+---------------+")
-    except:
-        print("Wrong Student ID!\n")
-        if continue_Query() == 1:
-            Student_Panel()
-        else:
-            View_Student_Issue_Book()
-
-#Main Run:-
-Create_Table()
+# Start the GUI
 start_menu()
+root.mainloop()
